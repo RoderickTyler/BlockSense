@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>BlockSense — HDB Resale Intelligence</title>
+<title>BlockSense — HDB Resale Search</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet"/>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
@@ -300,8 +300,8 @@ footer a{color:var(--accent);text-decoration:none;}
   <div class="page-section active" id="sec-search">
 
     <div class="hero">
-      <div class="hero-title">HDB Resale Intelligence</div>
-      <div class="hero-sub">Search real transactions by block, street or neighbourhood. Powered live by data.gov.sg — no login needed.</div>
+      <div class="hero-title">HDB Resale Search</div>
+      <div class="hero-sub">Search past resale transactions by town, street, flat type and floor. Data sourced live from data.gov.sg.</div>
       <div class="hero-stats">
         <div class="hero-stat"><div class="hero-stat-val">227K+</div><div class="hero-stat-label">Transactions from 2017</div></div>
         <div class="hero-stat"><div class="hero-stat-val">26</div><div class="hero-stat-label">Towns covered</div></div>
@@ -534,10 +534,10 @@ footer a{color:var(--accent);text-decoration:none;}
       </div>
       <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
         <button class="analyse-btn" onclick="analyseMedian()">✦ Analyse Differences</button>
-        <span style="font-size:11px;color:var(--muted);">Uses AI to interpret price movements across quarters</span>
+        <span style="font-size:11px;color:var(--muted);">✦ Interpret price movements across quarters</span>
       </div>
       <div class="analysis-box" id="analysis-box">
-        <div class="analysis-label">✦ AI Market Analysis</div>
+        <div class="analysis-label">✦ Market Analysis</div>
         <div id="analysis-text"></div>
       </div>
     </div>
@@ -547,7 +547,7 @@ footer a{color:var(--accent);text-decoration:none;}
 </main>
 
 <footer>
-  Data from <a href="https://data.gov.sg" target="_blank">data.gov.sg</a> — HDB Resale Flat Prices (Jan 2017 onwards).
+  Data from <a href="https://data.gov.sg" target="_blank">data.gov.sg</a> — HDB Resale Flat Prices.
   &nbsp;·&nbsp; <a href="https://github.com/rodericktyler/BlockSense" target="_blank">BlockSense</a> by Roderick Tyler
 </footer>
 
