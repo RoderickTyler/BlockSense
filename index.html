@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>BlockSense — HDB Resale Intelligence</title>
+<title>BlockSense — HDB Resale Search</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet"/>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
@@ -185,7 +185,7 @@ footer a{color:var(--accent);text-decoration:none;}
   <!-- ══ SECTION 1: SEARCH ══ -->
   <div class="page-section active" id="sec-search">
     <div class="hero">
-      <div class="hero-title">HDB Resale Intelligence</div>
+      <div class="hero-title">HDB Resale Search</div>
       <div class="hero-sub">Search real transactions by block, street or neighbourhood. Powered live by data.gov.sg.</div>
       <div class="hero-stats">
         <div class="hero-stat"><div class="hero-stat-val">227K+</div><div class="hero-stat-label">Transactions from 2017</div></div>
@@ -421,7 +421,7 @@ const API_BASE   = 'https://data.gov.sg/api/action/datastore_search';
 // 3. Select 'median' tab → CSV format → Publish → copy the link
 // 4. Replace GOOGLE_SHEET_CSV_URL below with that link
 // 5. Also update GOOGLE_SHEET_ID with the ID from your sheet URL
-const GOOGLE_SHEET_ID      = 'YOUR_GOOGLE_SHEET_ID_HERE';  // ← update this
+const GOOGLE_SHEET_ID      = '1yIiqAYwkUzDkaoCBIkYdNhIu9fGZltb0UmgP7QRsZOw';  // ← update this
 const GOOGLE_SHEET_CSV_URL = `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEET_ID}/gviz/tq?tqx=out:csv&sheet=median`;
 
 // ════════════════════════════════════════════════════════════
@@ -434,7 +434,7 @@ let medianRawData  = [];
 
 // ── Init sheet link ───────────────────────────────────────────
 document.getElementById('sheet-link').href = `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEET_ID}`;
-if (GOOGLE_SHEET_ID !== 'YOUR_GOOGLE_SHEET_ID_HERE') {
+if (GOOGLE_SHEET_ID !== '1yIiqAYwkUzDkaoCBIkYdNhIu9fGZltb0UmgP7QRsZOw') {
   document.getElementById('sheet-status-badge').textContent = 'Connected';
   document.getElementById('sheet-status-badge').className = 'sheet-status status-ok';
 }
@@ -707,7 +707,7 @@ async function loadMedianTable() {
   const stateEl  = document.getElementById('median-state');
   document.getElementById('median-results').style.display = 'none';
 
-  if (GOOGLE_SHEET_ID === 'YOUR_GOOGLE_SHEET_ID_HERE') {
+  if (GOOGLE_SHEET_ID === '1yIiqAYwkUzDkaoCBIkYdNhIu9fGZltb0UmgP7QRsZOw') {
     stateEl.innerHTML = `<div class="state-box"><div class="state-icon">⚙️</div><div class="state-title">Google Sheet not configured yet</div><div class="state-sub">Update GOOGLE_SHEET_ID in the website code with your Sheet ID, then run the Python pipeline to populate it.<br><br>Steps: 1) Create Google Sheet · 2) Run Python script · 3) Publish sheet as CSV · 4) Update GOOGLE_SHEET_ID in index.html</div></div>`;
     return;
   }
