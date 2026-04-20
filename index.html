@@ -413,7 +413,7 @@ const API_BASE   = 'https://data.gov.sg/api/action/datastore_search';
 // 3. Select 'median' tab → CSV format → Publish → copy the link
 // 4. Replace GOOGLE_SHEET_CSV_URL below with that link
 // 5. Also update GOOGLE_SHEET_ID with the ID from your sheet URL
-const GOOGLE_SHEET_ID      = '1yIiqAYwkUzDkaoCBIkYdNhIu9fGZltb0UmgP7QRsZOw';  // ← update this
+const GOOGLE_SHEET_ID      = '2PACX-1vSVOiR3jjkJ9jGNFxqwaNQmjtX05cEGLDgNJETzR8nf0F7eYM07RzLDiIj3pvMVSDeJxuYAJHInNy4T';  // ← update this
 const GOOGLE_SHEET_CSV_URL = `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEET_ID}/gviz/tq?tqx=out:csv&sheet=median`;
 
 // ════════════════════════════════════════════════════════════
@@ -426,7 +426,7 @@ let medianRawData  = [];
 
 // ── Init sheet link ───────────────────────────────────────────
 document.getElementById('sheet-link').href = `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEET_ID}`;
-if (GOOGLE_SHEET_ID !== '1yIiqAYwkUzDkaoCBIkYdNhIu9fGZltb0UmgP7QRsZOw') {
+if (GOOGLE_SHEET_ID !== '2PACX-1vSVOiR3jjkJ9jGNFxqwaNQmjtX05cEGLDgNJETzR8nf0F7eYM07RzLDiIj3pvMVSDeJxuYAJHInNy4T') {
   document.getElementById('sheet-status-badge').textContent = 'Connected';
   document.getElementById('sheet-status-badge').className = 'sheet-status status-ok';
 }
@@ -699,7 +699,7 @@ async function loadMedianTable() {
   const stateEl  = document.getElementById('median-state');
   document.getElementById('median-results').style.display = 'none';
 
-  if (GOOGLE_SHEET_ID === '1yIiqAYwkUzDkaoCBIkYdNhIu9fGZltb0UmgP7QRsZOw') {
+  if (GOOGLE_SHEET_ID === '2PACX-1vSVOiR3jjkJ9jGNFxqwaNQmjtX05cEGLDgNJETzR8nf0F7eYM07RzLDiIj3pvMVSDeJxuYAJHInNy4T') {
     stateEl.innerHTML = `<div class="state-box"><div class="state-icon">⚙️</div><div class="state-title">Google Sheet not configured yet</div><div class="state-sub">Update GOOGLE_SHEET_ID in the website code with your Sheet ID, then run the Python pipeline to populate it.<br><br>Steps: 1) Create Google Sheet · 2) Run Python script · 3) Publish sheet as CSV · 4) Update GOOGLE_SHEET_ID in index.html</div></div>`;
     return;
   }
