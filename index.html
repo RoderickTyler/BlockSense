@@ -460,7 +460,7 @@ async function loadAllData() {
 
   try {
     // 1. Load resale transactions
-    statusEl.innerHTML = '⏳ Loading transactions from Google Sheets…';
+    statusEl.innerHTML = '⏳ Loading transactions…';
     const r1 = await fetch(SHEET_URLS.resaletxn);
     if (!r1.ok) throw new Error(`Resale tab error ${r1.status}`);
     const resaleData = parseCSV(await r1.text());
@@ -491,11 +491,11 @@ async function loadAllData() {
     // Update status
     document.getElementById('data-load-status').style.background = 'rgba(29,158,117,0.08)';
     document.getElementById('data-load-status').style.borderColor = 'rgba(29,158,117,0.25)';
-    statusEl.innerHTML = `✓ <strong style="color:var(--accent2)">${resaleData.length.toLocaleString()} transactions</strong> loaded from Google Sheets · ${Object.keys(DB.townStreets).length} towns with street data · Ready to search`;
+    statusEl.innerHTML = `✓ <strong style="color:var(--accent2)">${resaleData.length.toLocaleString()} transactions</strong> loaded ·  Ready to search`;
 
   } catch(err) {
     document.getElementById('data-load-status').style.borderColor = 'rgba(224,92,58,0.4)';
-    statusEl.innerHTML = `⚠ Could not load from Google Sheets: ${err.message}<br><small>Make sure your sheet tabs are published as CSV (File → Share → Publish to web)</small>`;
+    statusEl.innerHTML = `⚠ Could not load: ${err.message}<br><small>Make sure your tabs are published as CSV (File → Share → Publish to web)</small>`;
     form.style.opacity = '1';
     form.style.pointerEvents = 'auto';
   }
