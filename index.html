@@ -707,7 +707,7 @@ async function loadMedianTable() {
   const stateEl  = document.getElementById('median-state');
   document.getElementById('median-results').style.display = 'none';
 
-  if (GOOGLE_SHEET_ID === 'YOUR_GOOGLE_SHEET_ID_HERE') {
+  if (GOOGLE_SHEET_ID === '1yIiqAYwkUzDkaoCBIkYdNhIu9fGZltb0UmgP7QRsZOwE') {
     stateEl.innerHTML = `<div class="state-box"><div class="state-icon">⚙️</div><div class="state-title">Google Sheet not configured yet</div><div class="state-sub">Update GOOGLE_SHEET_ID in the website code with your Sheet ID, then run the Python pipeline to populate it.<br><br>Steps: 1) Create Google Sheet · 2) Run Python script · 3) Publish sheet as CSV · 4) Update GOOGLE_SHEET_ID in index.html</div></div>`;
     return;
   }
