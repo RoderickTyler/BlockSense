@@ -425,7 +425,11 @@ let lastRecords    = [];
 let medianRawData  = [];
 
 // ── Init sheet link ───────────────────────────────────────────
-document.getElementById('sheet-link').href = `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEET_ID}`;
+//document.getElementById('sheet-link').href = `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEET_ID}`;
+const sheetLink = document.getElementById('sheet-link');
+if (sheetLink) {
+  sheetLink.href = `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEET_ID}`;
+}  
 if (GOOGLE_SHEET_ID !== 'YOUR_GOOGLE_SHEET_ID_HERE') {
   document.getElementById('sheet-status-badge').textContent = 'Connected';
   document.getElementById('sheet-status-badge').className = 'sheet-status status-ok';
