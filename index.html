@@ -337,7 +337,7 @@ footer a{color:var(--accent);text-decoration:none;}
       <div class="results-header">
         <div>
           <span class="results-title" id="results-title">Results</span>
-          <span class="data-source-badge">⚡ Google Sheets</span>
+          <span class="data-source-badge">⚡ BlockSense DataSet</span>
         </div>
         <div class="results-count" id="results-count"></div>
       </div>
@@ -481,7 +481,7 @@ async function loadAllData() {
 
     // Update hero stats
     document.getElementById('hero-txn-count').textContent = resaleData.length.toLocaleString() + '+';
-    const lastUpdated = resaleData[0]?.month || '—';
+    const lastUpdated = resaleData[0]?.updated_at?.slice(0, 10) || '—';
     document.getElementById('hero-updated').textContent = lastUpdated;
 
     // Enable form
