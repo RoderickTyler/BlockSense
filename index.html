@@ -384,14 +384,6 @@ footer a{color:var(--accent);text-decoration:none;}
       <div class="table-wrap" style="margin-bottom:12px;">
         <table class="median-table" id="median-table"></table>
       </div>
-      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-        <button class="analyse-btn" onclick="analyseMedian()">✦ Analyse Differences</button>
-        <span style="font-size:11px;color:var(--muted);">AI-powered market interpretation</span>
-      </div>
-      <div class="analysis-box" id="analysis-box">
-        <div class="analysis-label">✦ AI Market Analysis</div>
-        <div id="analysis-text"></div>
-      </div>
     </div>
   </div>
 
@@ -778,38 +770,6 @@ function renderMedianTable(data, flatType) {
 
   html += '</tbody>';
   document.getElementById('median-table').innerHTML = html;
-}
-
-async function analyseMedian() {
-  const { filtered, flatType } = medianRawData;
-  if (!filtered) return;
-  const box = document.getElementById('analysis-box');
-  const txt = document.getElementById('analysis-text');
-  box.classList.add('show');
-  txt.innerHTML = '<div class="spinner" style="margin:8px auto;"></div>';
-
-  const allQs = [...new Set(filtered.map(r=>r.quarter))].sort((a,b)=>{
-    const [qa,ya]=[a.slice(0,2),parseInt(a.slice(3))];
-    const [qb,yb]=[b.slice(0,2),parseInt(b.slice(3))];
-    return ya!==yb?yb-ya:qb.localeCompare(qa);
-  }).slice(0,3).reverse();
-
-  const lookup = {};
-  filtered.forEach(r=>{ lookup[`${r.town}||${r.quarter}`]=r; });
-  const lines = TOWNS.map(t=>{
-    const vals = allQs.map(q=>{ const d=lookup[`${t}||${q}`]; return d?`${q}=$${Math.round(Number(d.median_price)/1000)}k`:'—'; });
-    return `${t}: ${vals.join(', ')}`;
-  }).join('\n');
-
-  try {
-    const resp = await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:1000,
-        messages:[{role:'user',content:`You are a Singapore HDB property analyst. Here is median resale price data for ${flatType} flats:\n\n${lines}\n\nWrite a sharp 4-6 sentence analysis covering: 1) Overall market direction, 2) Top 2-3 towns with strongest growth, 3) Towns showing softening, 4) One actionable insight for buyers or sellers. Be specific with town names and percentages.`}]})
-    });
-    const data = await resp.json();
-    txt.innerHTML = (data.content?.[0]?.text||'Analysis unavailable.').replace(/\n/g,'<br>');
-  } catch(e) { txt.textContent='Analysis could not be loaded. Please try again.'; }
 }
 
 document.querySelectorAll('input[type=text]').forEach(inp=>{ inp.addEventListener('keydown',e=>{ if(e.key==='Enter') doSearch(); }); });
