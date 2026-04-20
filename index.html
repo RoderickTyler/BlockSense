@@ -481,7 +481,7 @@ async function loadAllData() {
 
     // Update hero stats
     document.getElementById('hero-txn-count').textContent = resaleData.length.toLocaleString() + '+';
-    const lastUpdated = resaleData[0]?.updated_at?.slice(0, 10) || '—';
+    const lastUpdated = resaleData.reduce((max, r) => r.month > max ? r.month : max, '');
     document.getElementById('hero-updated').textContent = lastUpdated;
 
     // Enable form
