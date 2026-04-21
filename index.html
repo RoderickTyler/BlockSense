@@ -1360,7 +1360,7 @@ function buildTopInsights(records,filterTown,dr,monthSet){
   const maison=records.filter(r=>(r.flat_model||'').toLowerCase().includes('maisonette'));
   if(maison.length){
     const m=maison[0];
-    html+=ins('Maisonettes','ti-amber',`${maison.length} maisonette deal${maison.length>1?'s':''} — top: <strong>${fmtPrice(Number(m.resale_price))}</strong> in <strong>${m.town}</strong>. These can't be replicated in new BTOs. Space, character and scarcity make them evergreen among serious buyers.`);
+    html+=ins('Maisonettes','ti-amber',`${maison.length} maisonette deal${maison.length>1?'s':''} - top: <strong>${fmtPrice(Number(m.resale_price))}</strong> in <strong>${m.town}</strong>. These can't be replicated in new BTOs. Space, character and scarcity make them evergreen among serious buyers.`);
   }
 
   // 8. DBSS
@@ -1372,7 +1372,7 @@ function buildTopInsights(records,filterTown,dr,monthSet){
   // 9. Top deal
   const topStorey=parseInt((top.storey_range||'').split(' ')[0])||0;
   const topComment=Number(top.resale_price)>=1500000?'Very few HDB transactions ever reach this level.':Number(top.resale_price)>=1200000?'A standout result driven by location and layout.':'A strong result where size and location aligned.';
-  html+=ins('Top deal of the list','ti-amber',`<strong>${fmtPrice(Number(top.resale_price))}</strong> — ${top.flat_type}${top.flat_model?' ('+top.flat_model+')':''} at ${top.block} ${top.street_name}, <strong>${top.town}</strong>. Floor: ${top.storey_range}, Size: ${top.floor_area_sqm} sqm. ${topComment}`);
+  html+=ins('Top deal of the list','ti-amber',`<strong>${fmtPrice(Number(top.resale_price))}</strong> - ${top.flat_type}${top.flat_model?' ('+top.flat_model+')':''} at ${top.block} ${top.street_name}, <strong>${top.town}</strong>. Floor: ${top.storey_range}, Size: ${top.floor_area_sqm} sqm. ${topComment}`);
 
   return html;
 }
