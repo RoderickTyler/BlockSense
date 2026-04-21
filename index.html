@@ -938,9 +938,9 @@ function buildVsPanel(containerId,town,flatLabel,periodLabel,tStats,mStats){
   }).join('');
   const d=diff(tStats.overall.median,mStats.overall.median);
   let conclusion,bgColor;
-  if(d.pct!==null&&d.pct>5){conclusion=`<strong>${town}</strong> is a <strong style="color:var(--accentr);">premium market</strong> — its median price is ${d.pct.toFixed(1)}% above the overall market median for ${flatLabel}. Buyers should expect to pay above the island average. Premium units, newer stock and strong location demand are likely driving prices higher.`;bgColor='rgba(224,92,58,0.06)';}
+  if(d.pct!==null&&d.pct>5){conclusion=`<strong>${town}</strong> is a <strong style="color:var(--accentr);">premium market</strong> - its median price is ${d.pct.toFixed(1)}% above the overall market median for ${flatLabel}. Buyers should expect to pay above the overall average. Premium units, newer stock and strong location demand are likely driving prices higher.`;bgColor='rgba(224,92,58,0.06)';}
   else if(d.pct!==null&&d.pct<-5){conclusion=`<strong>${town}</strong> transacts <strong style="color:var(--accent2);">below the market norm</strong> by ${Math.abs(d.pct).toFixed(1)}%. This may reflect a higher proportion of older stock, softer demand, or a different flat size mix. It could represent a value opportunity for buyers.`;bgColor='rgba(29,158,117,0.06)';}
-  else{conclusion=`<strong>${town}</strong> is <strong style="color:var(--accent);">broadly in line</strong> with the overall market for ${flatLabel}${d.pct!==null?' — within '+Math.abs(d.pct).toFixed(1)+'% of the market median':''}. Pricing here tracks the island average closely.`;bgColor='rgba(46,168,213,0.06)';}
+  else{conclusion=`<strong>${town}</strong> is <strong style="color:var(--accent);">broadly in line</strong> with the overall market for ${flatLabel}${d.pct!==null?' - within '+Math.abs(d.pct).toFixed(1)+'% of the market median':''}. Pricing here tracks the overall average closely.`;bgColor='rgba(46,168,213,0.06)';}
   const txnShare=mStats.overall.count>0?((tStats.overall.count/mStats.overall.count*100).toFixed(1)+'% of market'):'';
   const avgGapTown=tStats.overall.avg&&tStats.overall.median?fmtK(tStats.overall.avg-tStats.overall.median):'--';
   const avgGapMkt=mStats.overall.avg&&mStats.overall.median?fmtK(mStats.overall.avg-mStats.overall.median):'--';
@@ -1224,19 +1224,19 @@ function generateAgeFindings(overall,newS,midS,oldS,nF,nT,mF,mT,oF,oT,town,flat,
   const scope=`${flat||'All flat types'}${town?' in '+town:' across all towns'}`;
 
   // 1. Overall market
-  html+=`<div class="side-finding"><div class="side-finding-label sf-overall">Overall market</div>${scope}. ${overall.count.toLocaleString()} total transactions analysed. Median: ${fmtK(overall.median)}, Average: ${fmtK(overall.avg)}. ${overall.avg>overall.median?`Average is above median — some higher-priced deals are pulling the average up.`:`Average is close to or below median — transactions are broadly balanced.`}</div>`;
+  html+=`<div class="side-finding"><div class="side-finding-label sf-overall">Overall market</div>${scope}. ${overall.count.toLocaleString()} total transactions analysed. Median: ${fmtK(overall.median)}, Average: ${fmtK(overall.avg)}. ${overall.avg>overall.median?`Average is above median - some higher-priced deals are pulling the average up.`:`Average is close to or below median - transactions are broadly balanced.`}</div>`;
 
   // 2. New vs Mid vs Old
   const brackets=[[newS,'New','sf-new',`${nF}–${nT}`],[midS,'Mid-Age','sf-mid',`${mF}–${mT}`],[oldS,'Old','sf-old',`${oF}–${oT}`]];
   brackets.forEach(([s,label,cls,range])=>{
     if(s.count<1)return;
     const vsMkt=overall.median?((s.median-overall.median)/overall.median*100):null;
-    html+=`<div class="side-finding"><div class="side-finding-label ${cls}">${label} flats (${range})</div>${s.count} transactions. Median: ${fmtK(s.median)}, Avg: ${fmtK(s.avg)}. ${vsMkt!==null?`This bracket is <strong>${Math.abs(vsMkt).toFixed(1)}% ${vsMkt>0?'above':'below'}</strong> the overall median.`:''} ${s.avg>s.median?'Higher-end deals present — a few premium units pulling average up.':'Pricing is balanced within this bracket.'}</div>`;
+    html+=`<div class="side-finding"><div class="side-finding-label ${cls}">${label} flats (${range})</div>${s.count} transactions. Median: ${fmtK(s.median)}, Avg: ${fmtK(s.avg)}. ${vsMkt!==null?`This bracket is <strong>${Math.abs(vsMkt).toFixed(1)}% ${vsMkt>0?'above':'below'}</strong> the overall median.`:''} ${s.avg>s.median?'Higher-end deals present - a few premium units pulling average up.':'Pricing is balanced within this bracket.'}</div>`;
   });
 
   // 3. Premium bracket call-out
   const sortedByMedian=[{...newS,lbl:'New'},{...midS,lbl:'Mid-Age'},{...oldS,lbl:'Old'}].filter(s=>s.count>0).sort((a,b)=>(b.median||0)-(a.median||0));
-  if(sortedByMedian.length>1){const top=sortedByMedian[0];const bot=sortedByMedian[sortedByMedian.length-1];const prem=top.median&&bot.median?((top.median-bot.median)/bot.median*100):0;html+=`<div class="side-finding"><div class="side-finding-label sf-overall">Price premium</div><strong>${top.lbl}</strong> flats command the highest median at ${fmtK(top.median)}, which is <strong>${prem.toFixed(0)}% higher</strong> than <strong>${bot.lbl}</strong> flats at ${fmtK(bot.median)}. ${prem>20?'The price gap is significant — buyers are paying a notable premium for '+top.lbl.toLowerCase()+' units.':'The price gap between brackets is modest — all age groups are transacting at relatively similar levels.'}</div>`;}
+  if(sortedByMedian.length>1){const top=sortedByMedian[0];const bot=sortedByMedian[sortedByMedian.length-1];const prem=top.median&&bot.median?((top.median-bot.median)/bot.median*100):0;html+=`<div class="side-finding"><div class="side-finding-label sf-overall">Price premium</div><strong>${top.lbl}</strong> flats command the highest median at ${fmtK(top.median)}, which is <strong>${prem.toFixed(0)}% higher</strong> than <strong>${bot.lbl}</strong> flats at ${fmtK(bot.median)}. ${prem>20?'The price gap is significant - buyers are paying a notable premium for '+top.lbl.toLowerCase()+' units.':'The price gap between brackets is modest - all age groups are transacting at relatively similar levels.'}</div>`;}
 
   // 4. Town-level highlights (if all towns shown)
   if(!town&&rows.length>3){
@@ -1246,7 +1246,7 @@ function generateAgeFindings(overall,newS,midS,oldS,nF,nT,mF,mT,oF,oT,town,flat,
   }
 
   // 5. Buyer guidance
-  html+=`<div class="side-finding"><div class="side-finding-label sf-overall">Buyer guidance</div>${newS.count&&oldS.count&&newS.median>oldS.median?`New flats (${nF}–${nT}) are priced ${((newS.median-oldS.median)/oldS.median*100).toFixed(0)}% higher than older flats on median. Buyers seeking value should consider older stock — though remaining lease tenure will be shorter.`:`Older flats command comparable prices in this selection — remaining lease and upgrading history may be key differentiators.`}</div>`;
+  html+=`<div class="side-finding"><div class="side-finding-label sf-overall">Buyer guidance</div>${newS.count&&oldS.count&&newS.median>oldS.median?`New flats (${nF}–${nT}) are priced ${((newS.median-oldS.median)/oldS.median*100).toFixed(0)}% higher than older flats on median. Buyers seeking value may consider older stock - though remaining lease tenure will be shorter.`:`Older flats command comparable prices in this selection - remaining lease and upgrading history may be key differentiators.`}</div>`;
 
   return html;
 }
@@ -1309,7 +1309,7 @@ function buildTopInsights(records,filterTown,dr,monthSet){
   records.forEach(r=>{byType[r.flat_type]=(byType[r.flat_type]||0)+1;});
   const typeSorted=Object.entries(byType).sort((a,b)=>b[1]-a[1]);
   const typeStr=typeSorted.map(([t,c])=>`<strong>${t}</strong> ${c}`).join(', ');
-  const typeComment=byType['EXECUTIVE']?` Executive flats (${byType['EXECUTIVE']}) stand out — maisonette and jumbo layouts commanding serious premiums.`:byType['5 ROOM']>=(byType['4 ROOM']||0)?` 5-room flats dominate — size and floor level are key drivers.`:` 4-room units are punching above their weight — location and floor are doing the heavy lifting.`;
+  const typeComment=byType['EXECUTIVE']?` Executive flats (${byType['EXECUTIVE']}) stand out - Maisonette and EA layouts commanding serious premiums.`:byType['5 ROOM']>=(byType['4 ROOM']||0)?` 5-room flats dominate - size and floor level are key drivers.`:` 4-room units are punching above their weight - location and floor are doing the heavy lifting.`;
   html+=ins('Flat type mix','ti-green',typeStr+'.'+typeComment);
 
   // 3. Town breakdown
@@ -1327,7 +1327,7 @@ function buildTopInsights(records,filterTown,dr,monthSet){
     }).map(r=>r.town));
     const newTowns=Object.keys(byTown).filter(t=>!outsideMilTowns.has(t));
     if(newTowns.length){
-      html+=ins('🆕 First-time or rare','ti-amber',`<strong>${newTowns.join(', ')}</strong> ${newTowns.length===1?'does':'do'} not appear in the million-dollar list outside this period based on loaded data. This could be a first or a very rare milestone — worth noting.`);
+      html+=ins('🆕 First-time or rare','ti-amber',`<strong>${newTowns.join(', ')}</strong> ${newTowns.length===1?'does':'do'} not appear in the million-dollar list outside this period based on loaded data. This could be a first or a very rare milestone - worth noting.`);
     }
     // Towns that had deals before but are absent now
     const absentTowns=[...outsideMilTowns].filter(t=>!byTown[t]);
@@ -1340,19 +1340,19 @@ function buildTopInsights(records,filterTown,dr,monthSet){
   const jumbo=records.filter(r=>Number(r.floor_area_sqm)>=140);
   if(jumbo.length){
     const j=jumbo[0];
-    html+=ins('Jumbo layouts (≥140 sqm)','ti-amber',`${jumbo.length} deal${jumbo.length>1?'s':''} with exceptionally large floor plates. Biggest: <strong>${j.floor_area_sqm} sqm</strong> at ${j.block} ${j.street_name}, ${j.town} — ${fmtPrice(Number(j.resale_price))}. Size is a clear premium driver.`);
+    html+=ins('Large layouts (≥140 sqm)','ti-amber',`${jumbo.length} deal${jumbo.length>1?'s':''} with exceptionally large floor plates. Biggest: <strong>${j.floor_area_sqm} sqm</strong> at ${j.block} ${j.street_name}, ${j.town} - ${fmtPrice(Number(j.resale_price))}. Size is a clear premium driver.`);
   }
 
   // 6. Loft units
   const lofts=records.filter(r=>(r.flat_model||'').toLowerCase().includes('loft'));
   if(lofts.length){
     const l=lofts[0];
-    html+=ins('Premium Loft units','ti-green',`${lofts.length} loft unit${lofts.length>1?'s':''} in this list. Loft layouts are scarce and unique — double-volume space commands a rarity premium. Top loft: <strong>${fmtPrice(Number(l.resale_price))}</strong> in ${l.town}.`);
+    html+=ins('Premium Loft units','ti-green',`${lofts.length} loft unit${lofts.length>1?'s':''} in this list. Loft layouts are scarce and unique - double-volume space commands a rarity premium. Top loft: <strong>${fmtPrice(Number(l.resale_price))}</strong> in ${l.town}.`);
   } else {
     // High floor (25F+) if no lofts
     const hiFloor=records.filter(r=>{const lo=parseInt((r.storey_range||'').split(' ')[0])||0;return lo>=25;});
     if(hiFloor.length){
-      html+=ins('High-floor deals (25F+)','ti-green',`${hiFloor.length} deal${hiFloor.length>1?'s':''} on the 25th floor or above. Views and exclusivity drive these prices — high floors consistently command top dollar.`);
+      html+=ins('High-floor deals (25F+)','ti-green',`${hiFloor.length} deal${hiFloor.length>1?'s':''} on the 25th floor or above. Views and exclusivity drive these prices - high floors consistently command top dollar.`);
     }
   }
 
@@ -1366,12 +1366,12 @@ function buildTopInsights(records,filterTown,dr,monthSet){
   // 8. DBSS
   const dbss=records.filter(r=>(r.flat_model||'').toUpperCase().includes('DBSS'));
   if(dbss.length){
-    html+=ins('DBSS units','ti-blue',`${dbss.length} DBSS deal${dbss.length>1?'s':''} in this list. Private-developer HDB finishes, no new supply ever — scarcity keeps DBSS attractive for buyers who want something different.`);
+    html+=ins('DBSS units','ti-blue',`${dbss.length} DBSS deal${dbss.length>1?'s':''} in this list. Private-developer HDB finishes, no new supply ever - scarcity keeps DBSS attractive for buyers who want something different.`);
   }
 
   // 9. Top deal
   const topStorey=parseInt((top.storey_range||'').split(' ')[0])||0;
-  const topComment=Number(top.resale_price)>=1500000?'An exceptional result — very few HDB transactions ever reach this level.':Number(top.resale_price)>=1200000?'A standout result driven by location, layout and floor.':'A strong result where size, floor and location aligned.';
+  const topComment=Number(top.resale_price)>=1500000?'Very few HDB transactions ever reach this level.':Number(top.resale_price)>=1200000?'A standout result driven by location and layout.':'A strong result where size and location aligned.';
   html+=ins('Top deal of the list','ti-amber',`<strong>${fmtPrice(Number(top.resale_price))}</strong> — ${top.flat_type}${top.flat_model?' ('+top.flat_model+')':''} at ${top.block} ${top.street_name}, <strong>${top.town}</strong>. Floor: ${top.storey_range}, Size: ${top.floor_area_sqm} sqm. ${topComment}`);
 
   return html;
