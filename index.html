@@ -162,7 +162,21 @@ tbody td{padding:10px 13px;color:var(--text);}
 .hero-stats{display:flex;gap:24px;margin-top:20px;flex-wrap:wrap;}
 .hero-stat-val{font-size:22px;font-weight:700;color:var(--accent);}
 .hero-stat-label{font-size:11px;color:var(--muted);margin-top:2px;}
-/* Map town regions */
+/* Combo input (type + dropdown) */
+.combo-wrap{position:relative;}
+.combo-input-row{display:flex;gap:0;align-items:stretch;}
+.combo-text{flex:1;height:40px;border:1px solid var(--border);border-right:none;border-radius:9px 0 0 9px;padding:0 10px;font-size:13px;font-family:'DM Sans',sans-serif;background:var(--surface);color:var(--text);outline:none;transition:border-color .15s;min-width:0;}
+.combo-text:focus{border-color:var(--accent);background:var(--bg);}
+.combo-text::placeholder{color:var(--muted);}
+.combo-chevron{width:34px;height:40px;border:1px solid var(--border);border-left:none;border-radius:0 9px 9px 0;background:var(--surface);color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:11px;transition:all .15s;flex-shrink:0;}
+.combo-chevron:hover{background:var(--surface2);color:var(--accent);border-color:var(--accent);}
+.combo-chevron.open{color:var(--accent);border-color:var(--accent);}
+.combo-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px;min-height:0;}
+.combo-tag{display:inline-flex;align-items:center;gap:4px;background:rgba(46,168,213,0.15);border:1px solid rgba(46,168,213,0.3);color:var(--accent);font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;cursor:default;}
+.combo-tag .tag-x{cursor:pointer;font-size:13px;line-height:1;opacity:.7;margin-left:1px;}
+.combo-tag .tag-x:hover{opacity:1;}
+[data-theme="light"] .combo-tag{background:rgba(21,101,168,0.1);border-color:rgba(21,101,168,0.25);color:var(--accent);}
+
 .town-region rect{fill:rgba(46,168,213,0.08);stroke:rgba(46,168,213,0.3);stroke-width:1.5;transition:fill .15s,stroke .15s;}
 .town-region:hover rect{fill:rgba(46,168,213,0.25);stroke:var(--accent,#2ea8d5);stroke-width:2;}
 .town-region.selected rect{fill:rgba(46,168,213,0.4);stroke:var(--accent,#2ea8d5);stroke-width:2.5;}
@@ -287,9 +301,13 @@ footer a{color:var(--accent);text-decoration:none;}
   <div class="card" id="search-form" style="opacity:0.5;pointer-events:none;">
     <div class="form-grid">
       <div class="form-group">
-        <label>Town <span class="opt">(multi-select)</span></label>
-        <div class="multi-select-wrap" id="town-ms-wrap">
-          <div class="multi-select-trigger" id="town-ms-trigger" onclick="toggleMS('ms-town')"><span id="ms-town-label">All towns</span><span>&#x25BE;</span></div>
+        <label>Town <span class="opt">(type or multi-select)</span></label>
+        <div class="combo-wrap" id="town-ms-wrap">
+          <div class="combo-input-row">
+            <input type="text" class="combo-text" id="town-combo-text" placeholder="Type to filter towns…" oninput="comboFilter('ms-town',this.value,'town')" onfocus="openCombo('ms-town','town-combo-chevron')" autocomplete="off"/>
+            <button class="combo-chevron" id="town-combo-chevron" onclick="toggleComboDropdown('ms-town','town-combo-chevron')">&#x25BE;</button>
+          </div>
+          <div class="combo-tags" id="town-combo-tags"></div>
           <div class="multi-select-dropdown" id="ms-town">
             <label class="ms-item ms-all"><input type="checkbox" id="ms-town-all" onchange="toggleAllTowns()"/> All towns</label>
             <label class="ms-item"><input type="checkbox" value="ANG MO KIO" onchange="onTownCheckChange()"/> ANG MO KIO</label>
@@ -322,29 +340,34 @@ footer a{color:var(--accent);text-decoration:none;}
         </div>
       </div>
       <div class="form-group">
-        <label>Flat type <span class="opt">(multi-select)</span></label>
-        <div class="multi-select-wrap">
-          <div class="multi-select-trigger" onclick="toggleMS('ms-flat')"><span id="ms-flat-label">All types</span><span>&#x25BE;</span></div>
+        <label>Flat type <span class="opt">(type or multi-select)</span></label>
+        <div class="combo-wrap">
+          <div class="combo-input-row">
+            <input type="text" class="combo-text" id="flat-combo-text" placeholder="e.g. 4 ROOM, EXECUTIVE…" oninput="comboFilter('ms-flat',this.value,'flat')" onfocus="openCombo('ms-flat','flat-combo-chevron')" autocomplete="off"/>
+            <button class="combo-chevron" id="flat-combo-chevron" onclick="toggleComboDropdown('ms-flat','flat-combo-chevron')">&#x25BE;</button>
+          </div>
+          <div class="combo-tags" id="flat-combo-tags"></div>
           <div class="multi-select-dropdown" id="ms-flat">
-            <label class="ms-item ms-all"><input type="checkbox" id="ms-flat-all" onchange="toggleAllGeneric('ms-flat','ms-flat-all','ms-flat-label','type')"/> All types</label>
-            <label class="ms-item"><input type="checkbox" value="1 ROOM"         onchange="updateGenericLabel('ms-flat','ms-flat-all','ms-flat-label','type')"/> 1 ROOM</label>
-            <label class="ms-item"><input type="checkbox" value="2 ROOM"         onchange="updateGenericLabel('ms-flat','ms-flat-all','ms-flat-label','type')"/> 2 ROOM</label>
-            <label class="ms-item"><input type="checkbox" value="3 ROOM"         onchange="updateGenericLabel('ms-flat','ms-flat-all','ms-flat-label','type')"/> 3 ROOM</label>
-            <label class="ms-item"><input type="checkbox" value="4 ROOM"         onchange="updateGenericLabel('ms-flat','ms-flat-all','ms-flat-label','type')"/> 4 ROOM</label>
-            <label class="ms-item"><input type="checkbox" value="5 ROOM"         onchange="updateGenericLabel('ms-flat','ms-flat-all','ms-flat-label','type')"/> 5 ROOM</label>
-            <label class="ms-item"><input type="checkbox" value="EXECUTIVE"      onchange="updateGenericLabel('ms-flat','ms-flat-all','ms-flat-label','type')"/> EXECUTIVE</label>
-            <label class="ms-item"><input type="checkbox" value="MULTI-GENERATION" onchange="updateGenericLabel('ms-flat','ms-flat-all','ms-flat-label','type')"/> MULTI-GENERATION</label>
+            <label class="ms-item ms-all"><input type="checkbox" id="ms-flat-all" onchange="toggleAllGeneric('ms-flat','ms-flat-all','ms-flat-label','type');renderComboTags('ms-flat','flat-combo-tags','flat')"/> All types</label>
+            <label class="ms-item"><input type="checkbox" value="1 ROOM"           onchange="comboCheckChange('ms-flat','ms-flat-all','ms-flat-label','type','flat-combo-tags','flat')"/> 1 ROOM</label>
+            <label class="ms-item"><input type="checkbox" value="2 ROOM"           onchange="comboCheckChange('ms-flat','ms-flat-all','ms-flat-label','type','flat-combo-tags','flat')"/> 2 ROOM</label>
+            <label class="ms-item"><input type="checkbox" value="3 ROOM"           onchange="comboCheckChange('ms-flat','ms-flat-all','ms-flat-label','type','flat-combo-tags','flat')"/> 3 ROOM</label>
+            <label class="ms-item"><input type="checkbox" value="4 ROOM"           onchange="comboCheckChange('ms-flat','ms-flat-all','ms-flat-label','type','flat-combo-tags','flat')"/> 4 ROOM</label>
+            <label class="ms-item"><input type="checkbox" value="5 ROOM"           onchange="comboCheckChange('ms-flat','ms-flat-all','ms-flat-label','type','flat-combo-tags','flat')"/> 5 ROOM</label>
+            <label class="ms-item"><input type="checkbox" value="EXECUTIVE"        onchange="comboCheckChange('ms-flat','ms-flat-all','ms-flat-label','type','flat-combo-tags','flat')"/> EXECUTIVE</label>
+            <label class="ms-item"><input type="checkbox" value="MULTI-GENERATION" onchange="comboCheckChange('ms-flat','ms-flat-all','ms-flat-label','type','flat-combo-tags','flat')"/> MULTI-GENERATION</label>
           </div>
         </div>
       </div>
       <div class="form-group full">
-        <label>Street name <span class="opt">(multi-select — select town first, or type to search)</span></label>
-        <div class="multi-select-wrap" id="street-ms-wrap">
-          <div class="multi-select-trigger" onclick="toggleMS('ms-street')"><span id="ms-street-label">All streets</span><span>&#x25BE;</span></div>
-          <div class="multi-select-dropdown" id="ms-street" style="max-height:200px;">
-            <div style="padding:8px 10px;border-bottom:1px solid var(--border);">
-              <input type="text" id="street-search-input" placeholder="Type to filter streets…" style="height:32px;font-size:12px;" oninput="filterStreetOptions(this.value)" onclick="event.stopPropagation()"/>
-            </div>
+        <label>Street name <span class="opt">(type or multi-select — select town first to load options)</span></label>
+        <div class="combo-wrap" id="street-ms-wrap">
+          <div class="combo-input-row">
+            <input type="text" class="combo-text" id="street-combo-text" placeholder="Type street name or select town first…" oninput="comboFilterDynamic('ms-street','ms-street-options',this.value,'street-combo-chevron')" onfocus="openCombo('ms-street','street-combo-chevron')" autocomplete="off"/>
+            <button class="combo-chevron" id="street-combo-chevron" onclick="toggleComboDropdown('ms-street','street-combo-chevron')">&#x25BE;</button>
+          </div>
+          <div class="combo-tags" id="street-combo-tags"></div>
+          <div class="multi-select-dropdown" id="ms-street" style="max-height:220px;">
             <label class="ms-item ms-all"><input type="checkbox" id="ms-street-all" onchange="toggleAllStreets()"/> All streets</label>
             <div id="ms-street-options"><div style="padding:10px 14px;font-size:12px;color:var(--muted);">Select a town to load streets</div></div>
           </div>
@@ -352,41 +375,46 @@ footer a{color:var(--accent);text-decoration:none;}
         <div id="street-info" style="font-size:11px;color:var(--muted);margin-top:4px;display:none;"></div>
       </div>
       <div class="form-group">
-        <label>Block <span class="opt">(multi-select)</span></label>
-        <div class="multi-select-wrap" id="block-ms-wrap">
-          <div class="multi-select-trigger" onclick="toggleMS('ms-block')"><span id="ms-block-label">All blocks</span><span>&#x25BE;</span></div>
-          <div class="multi-select-dropdown" id="ms-block" style="max-height:200px;">
-            <div style="padding:8px 10px;border-bottom:1px solid var(--border);">
-              <input type="text" id="block-search-input" placeholder="Type to filter blocks…" style="height:32px;font-size:12px;" oninput="filterBlockOptions(this.value)" onclick="event.stopPropagation()"/>
-            </div>
+        <label>Block <span class="opt">(type or multi-select)</span></label>
+        <div class="combo-wrap" id="block-ms-wrap">
+          <div class="combo-input-row">
+            <input type="text" class="combo-text" id="block-combo-text" placeholder="e.g. 123, 456…" oninput="comboFilterDynamic('ms-block','ms-block-options',this.value,'block-combo-chevron')" onfocus="openCombo('ms-block','block-combo-chevron')" autocomplete="off"/>
+            <button class="combo-chevron" id="block-combo-chevron" onclick="toggleComboDropdown('ms-block','block-combo-chevron')">&#x25BE;</button>
+          </div>
+          <div class="combo-tags" id="block-combo-tags"></div>
+          <div class="multi-select-dropdown" id="ms-block" style="max-height:220px;">
             <label class="ms-item ms-all"><input type="checkbox" id="ms-block-all" onchange="toggleAllBlocks()"/> All blocks</label>
             <div id="ms-block-options"><div style="padding:10px 14px;font-size:12px;color:var(--muted);">Select a town to load blocks</div></div>
           </div>
         </div>
       </div>
       <div class="form-group">
-        <label>Storey <span class="opt">(multi-select)</span></label>
-        <div class="multi-select-wrap">
-          <div class="multi-select-trigger" onclick="toggleMS('ms-storey')"><span id="ms-storey-label">Any floor</span><span>&#x25BE;</span></div>
+        <label>Storey <span class="opt">(type or multi-select)</span></label>
+        <div class="combo-wrap">
+          <div class="combo-input-row">
+            <input type="text" class="combo-text" id="storey-combo-text" placeholder="e.g. 10 TO 12, high floor…" oninput="comboFilter('ms-storey',this.value,'storey')" onfocus="openCombo('ms-storey','storey-combo-chevron')" autocomplete="off"/>
+            <button class="combo-chevron" id="storey-combo-chevron" onclick="toggleComboDropdown('ms-storey','storey-combo-chevron')">&#x25BE;</button>
+          </div>
+          <div class="combo-tags" id="storey-combo-tags"></div>
           <div class="multi-select-dropdown" id="ms-storey">
-            <label class="ms-item ms-all"><input type="checkbox" id="ms-storey-all" onchange="toggleAllGeneric('ms-storey','ms-storey-all','ms-storey-label','floor')"/> Any floor</label>
-            <label class="ms-item"><input type="checkbox" value="01 TO 03" onchange="updateGenericLabel('ms-storey','ms-storey-all','ms-storey-label','floor')"/> 01 TO 03</label>
-            <label class="ms-item"><input type="checkbox" value="04 TO 06" onchange="updateGenericLabel('ms-storey','ms-storey-all','ms-storey-label','floor')"/> 04 TO 06</label>
-            <label class="ms-item"><input type="checkbox" value="07 TO 09" onchange="updateGenericLabel('ms-storey','ms-storey-all','ms-storey-label','floor')"/> 07 TO 09</label>
-            <label class="ms-item"><input type="checkbox" value="10 TO 12" onchange="updateGenericLabel('ms-storey','ms-storey-all','ms-storey-label','floor')"/> 10 TO 12</label>
-            <label class="ms-item"><input type="checkbox" value="13 TO 15" onchange="updateGenericLabel('ms-storey','ms-storey-all','ms-storey-label','floor')"/> 13 TO 15</label>
-            <label class="ms-item"><input type="checkbox" value="16 TO 18" onchange="updateGenericLabel('ms-storey','ms-storey-all','ms-storey-label','floor')"/> 16 TO 18</label>
-            <label class="ms-item"><input type="checkbox" value="19 TO 21" onchange="updateGenericLabel('ms-storey','ms-storey-all','ms-storey-label','floor')"/> 19 TO 21</label>
-            <label class="ms-item"><input type="checkbox" value="22 TO 24" onchange="updateGenericLabel('ms-storey','ms-storey-all','ms-storey-label','floor')"/> 22 TO 24</label>
-            <label class="ms-item"><input type="checkbox" value="25 TO 27" onchange="updateGenericLabel('ms-storey','ms-storey-all','ms-storey-label','floor')"/> 25 TO 27</label>
-            <label class="ms-item"><input type="checkbox" value="28 TO 30" onchange="updateGenericLabel('ms-storey','ms-storey-all','ms-storey-label','floor')"/> 28 TO 30</label>
-            <label class="ms-item"><input type="checkbox" value="31 TO 33" onchange="updateGenericLabel('ms-storey','ms-storey-all','ms-storey-label','floor')"/> 31 TO 33</label>
-            <label class="ms-item"><input type="checkbox" value="34 TO 36" onchange="updateGenericLabel('ms-storey','ms-storey-all','ms-storey-label','floor')"/> 34 TO 36</label>
-            <label class="ms-item"><input type="checkbox" value="37 TO 39" onchange="updateGenericLabel('ms-storey','ms-storey-all','ms-storey-label','floor')"/> 37 TO 39</label>
-            <label class="ms-item"><input type="checkbox" value="40 TO 42" onchange="updateGenericLabel('ms-storey','ms-storey-all','ms-storey-label','floor')"/> 40 TO 42</label>
-            <label class="ms-item"><input type="checkbox" value="43 TO 45" onchange="updateGenericLabel('ms-storey','ms-storey-all','ms-storey-label','floor')"/> 43 TO 45</label>
-            <label class="ms-item"><input type="checkbox" value="46 TO 48" onchange="updateGenericLabel('ms-storey','ms-storey-all','ms-storey-label','floor')"/> 46 TO 48</label>
-            <label class="ms-item"><input type="checkbox" value="49 TO 51" onchange="updateGenericLabel('ms-storey','ms-storey-all','ms-storey-label','floor')"/> 49 TO 51</label>
+            <label class="ms-item ms-all"><input type="checkbox" id="ms-storey-all" onchange="toggleAllGeneric('ms-storey','ms-storey-all','ms-storey-label','floor');renderComboTags('ms-storey','storey-combo-tags','storey')"/> Any floor</label>
+            <label class="ms-item"><input type="checkbox" value="01 TO 03" onchange="comboCheckChange('ms-storey','ms-storey-all','ms-storey-label','floor','storey-combo-tags','storey')"/> 01 TO 03</label>
+            <label class="ms-item"><input type="checkbox" value="04 TO 06" onchange="comboCheckChange('ms-storey','ms-storey-all','ms-storey-label','floor','storey-combo-tags','storey')"/> 04 TO 06</label>
+            <label class="ms-item"><input type="checkbox" value="07 TO 09" onchange="comboCheckChange('ms-storey','ms-storey-all','ms-storey-label','floor','storey-combo-tags','storey')"/> 07 TO 09</label>
+            <label class="ms-item"><input type="checkbox" value="10 TO 12" onchange="comboCheckChange('ms-storey','ms-storey-all','ms-storey-label','floor','storey-combo-tags','storey')"/> 10 TO 12</label>
+            <label class="ms-item"><input type="checkbox" value="13 TO 15" onchange="comboCheckChange('ms-storey','ms-storey-all','ms-storey-label','floor','storey-combo-tags','storey')"/> 13 TO 15</label>
+            <label class="ms-item"><input type="checkbox" value="16 TO 18" onchange="comboCheckChange('ms-storey','ms-storey-all','ms-storey-label','floor','storey-combo-tags','storey')"/> 16 TO 18</label>
+            <label class="ms-item"><input type="checkbox" value="19 TO 21" onchange="comboCheckChange('ms-storey','ms-storey-all','ms-storey-label','floor','storey-combo-tags','storey')"/> 19 TO 21</label>
+            <label class="ms-item"><input type="checkbox" value="22 TO 24" onchange="comboCheckChange('ms-storey','ms-storey-all','ms-storey-label','floor','storey-combo-tags','storey')"/> 22 TO 24</label>
+            <label class="ms-item"><input type="checkbox" value="25 TO 27" onchange="comboCheckChange('ms-storey','ms-storey-all','ms-storey-label','floor','storey-combo-tags','storey')"/> 25 TO 27</label>
+            <label class="ms-item"><input type="checkbox" value="28 TO 30" onchange="comboCheckChange('ms-storey','ms-storey-all','ms-storey-label','floor','storey-combo-tags','storey')"/> 28 TO 30</label>
+            <label class="ms-item"><input type="checkbox" value="31 TO 33" onchange="comboCheckChange('ms-storey','ms-storey-all','ms-storey-label','floor','storey-combo-tags','storey')"/> 31 TO 33</label>
+            <label class="ms-item"><input type="checkbox" value="34 TO 36" onchange="comboCheckChange('ms-storey','ms-storey-all','ms-storey-label','floor','storey-combo-tags','storey')"/> 34 TO 36</label>
+            <label class="ms-item"><input type="checkbox" value="37 TO 39" onchange="comboCheckChange('ms-storey','ms-storey-all','ms-storey-label','floor','storey-combo-tags','storey')"/> 37 TO 39</label>
+            <label class="ms-item"><input type="checkbox" value="40 TO 42" onchange="comboCheckChange('ms-storey','ms-storey-all','ms-storey-label','floor','storey-combo-tags','storey')"/> 40 TO 42</label>
+            <label class="ms-item"><input type="checkbox" value="43 TO 45" onchange="comboCheckChange('ms-storey','ms-storey-all','ms-storey-label','floor','storey-combo-tags','storey')"/> 43 TO 45</label>
+            <label class="ms-item"><input type="checkbox" value="46 TO 48" onchange="comboCheckChange('ms-storey','ms-storey-all','ms-storey-label','floor','storey-combo-tags','storey')"/> 46 TO 48</label>
+            <label class="ms-item"><input type="checkbox" value="49 TO 51" onchange="comboCheckChange('ms-storey','ms-storey-all','ms-storey-label','floor','storey-combo-tags','storey')"/> 49 TO 51</label>
           </div>
         </div>
       </div>
@@ -955,13 +983,69 @@ async function loadAllData(){const statusEl=document.getElementById('data-load-m
 function toggleAdv(){const body=document.getElementById('adv-body');const icon=document.getElementById('adv-icon');const open=body.classList.toggle('open');icon.textContent=open?'▾':'▸';}
 function syncLeaseRange(which){let from=parseInt(document.getElementById('lease-from').value);let to=parseInt(document.getElementById('lease-to').value);if(which==='from'&&from>to){to=from;document.getElementById('lease-to').value=to;}if(which==='to'&&to<from){from=to;document.getElementById('lease-from').value=from;}document.getElementById('lease-from-label').textContent=from;document.getElementById('lease-to-label').textContent=to;const allYears=(from===1960&&to===2025);document.getElementById('lease-range-display').textContent=allYears?'All years (1960 - 2025)':`${from} - ${to}`;}
 function getSelectedTowns(){return Array.from(document.querySelectorAll('#ms-town input[type=checkbox]:not(#ms-town-all):checked')).map(c=>c.value);}
-function updateTownLabel(){const sel=getSelectedTowns();const lbl=document.getElementById('ms-town-label');lbl.textContent=!sel.length?'All towns':sel.length===1?sel[0]:`${sel.length} towns selected`;}
+function updateTownLabel(){const sel=getSelectedTowns();const lbl=document.getElementById('ms-town-label');if(lbl)lbl.textContent=!sel.length?'All towns':sel.length===1?sel[0]:`${sel.length} towns selected`;renderComboTags('ms-town','town-combo-tags','town');}
 function toggleAllTowns(){const allCb=document.getElementById('ms-town-all');document.querySelectorAll('#ms-town input[type=checkbox]:not(#ms-town-all)').forEach(c=>c.checked=allCb.checked);updateTownLabel();syncMapFromDropdown();}
 function onTownCheckChange(){const all=document.querySelectorAll('#ms-town input[type=checkbox]:not(#ms-town-all)');document.getElementById('ms-town-all').checked=[...all].every(c=>c.checked);updateTownLabel();syncMapFromDropdown();onTownChange();}
 
+// ── Combo engine (type + dropdown + tags) ──────────────────────
+function openCombo(ddId,chevronId){const dd=document.getElementById(ddId);if(!dd.classList.contains('open')){document.querySelectorAll('.multi-select-dropdown').forEach(d=>d.classList.remove('open'));document.querySelectorAll('.combo-chevron').forEach(c=>c.classList.remove('open'));dd.classList.add('open');if(chevronId)document.getElementById(chevronId).classList.add('open');}}
+function toggleComboDropdown(ddId,chevronId){const dd=document.getElementById(ddId);const wasOpen=dd.classList.contains('open');document.querySelectorAll('.multi-select-dropdown').forEach(d=>d.classList.remove('open'));document.querySelectorAll('.combo-chevron').forEach(c=>c.classList.remove('open'));if(!wasOpen){dd.classList.add('open');if(chevronId)document.getElementById(chevronId).classList.add('open');}}
+
+// Filter visible items in a static dropdown by text, select exact match on Enter
+function comboFilter(ddId,query,field){
+  const dd=document.getElementById(ddId);
+  const q=query.trim().toUpperCase();
+  dd.querySelectorAll('.ms-item:not(.ms-all)').forEach(item=>{
+    const val=item.querySelector('input[type=checkbox]').value.toUpperCase();
+    item.style.display=(!q||val.includes(q))?'':'none';
+  });
+  if(q)openCombo(ddId,field+'-combo-chevron');
+}
+
+// Filter visible items in a dynamic dropdown (street/block with separate options container)
+function comboFilterDynamic(ddId,optionsId,query,chevronId){
+  const q=query.trim().toUpperCase();
+  const container=document.getElementById(optionsId);
+  container.querySelectorAll('.ms-item').forEach(item=>{
+    const cb=item.querySelector('input[type=checkbox]');
+    if(!cb)return;
+    const val=cb.value.toUpperCase();
+    item.style.display=(!q||val.includes(q))?'':'none';
+  });
+  if(q)openCombo(ddId,chevronId);
+}
+
+// Render selected values as removable tags
+function renderComboTags(ddId,tagsId,field){
+  const container=document.getElementById(tagsId);
+  if(!container)return;
+  const sel=getCheckedFromDD(ddId);
+  container.innerHTML=sel.map(v=>`<span class="combo-tag">${v}<span class="tag-x" onclick="removeComboTag('${ddId}','${v}','${tagsId}','${field}')">×</span></span>`).join('');
+}
+
+function getCheckedFromDD(ddId){
+  return Array.from(document.querySelectorAll(`#${ddId} input[type=checkbox]:not([id$="-all"]):checked`)).map(c=>c.value);
+}
+
+function removeComboTag(ddId,val,tagsId,field){
+  const cb=document.querySelector(`#${ddId} input[value="${CSS.escape(val)}"]`);
+  if(!cb){// dynamic options (street/block) — search in options containers
+    const optId=ddId==='ms-street'?'ms-street-options':'ms-block-options';
+    const cb2=document.querySelector(`#${optId} input[value="${CSS.escape(val)}"]`);
+    if(cb2){cb2.checked=false;}
+  } else {cb.checked=false;}
+  renderComboTags(ddId,tagsId,field);
+  if(field==='town')onTownCheckChange();
+}
+
+function comboCheckChange(ddId,allId,labelId,noun,tagsId,field){
+  updateGenericLabel(ddId,allId,labelId,noun);
+  renderComboTags(ddId,tagsId,field);
+}
+
 // ── Generic multi-select helpers ───────────────────────────────
 function getChecked(ddId){return Array.from(document.querySelectorAll(`#${ddId} input[type=checkbox]:not([id$="-all"]):checked`)).map(c=>c.value);}
-function updateGenericLabel(ddId,allId,labelId,noun){const sel=getChecked(ddId);const lbl=document.getElementById(labelId);const allCb=document.getElementById(allId);allCb.checked=sel.length===0||sel.length===document.querySelectorAll(`#${ddId} input[type=checkbox]:not([id$="-all"])`).length;lbl.textContent=sel.length===0?`All ${noun}s`:sel.length===1?sel[0]:`${sel.length} ${noun}s selected`;}
+function updateGenericLabel(ddId,allId,labelId,noun){const sel=getChecked(ddId);const lbl=document.getElementById(labelId);if(!lbl)return;const allCb=document.getElementById(allId);if(allCb)allCb.checked=sel.length===0||sel.length===document.querySelectorAll(`#${ddId} input[type=checkbox]:not([id$="-all"])`).length;lbl.textContent=sel.length===0?`All ${noun}s`:sel.length===1?sel[0]:`${sel.length} ${noun}s selected`;}
 function toggleAllGeneric(ddId,allId,labelId,noun){const allCb=document.getElementById(allId);document.querySelectorAll(`#${ddId} input[type=checkbox]:not([id$="-all"])`).forEach(c=>c.checked=allCb.checked);updateGenericLabel(ddId,allId,labelId,noun);}
 
 // ── Street multi-select ─────────────────────────────────────────
@@ -973,7 +1057,7 @@ function buildStreetOptions(streets){
 function renderStreetOptions(streets){
   const container=document.getElementById('ms-street-options');
   if(!streets.length){container.innerHTML='<div style="padding:10px 14px;font-size:12px;color:var(--muted);">No streets found</div>';return;}
-  container.innerHTML=streets.map(s=>`<label class="ms-item"><input type="checkbox" value="${s}" onchange="updateGenericLabel('ms-street','ms-street-all','ms-street-label','street')"/> ${s}</label>`).join('');
+  container.innerHTML=streets.map(s=>`<label class="ms-item"><input type="checkbox" value="${s}" onchange="streetBlockTagChange()"/> ${s}</label>`).join('');
 }
 function filterStreetOptions(q){
   const filtered=q?allStreetOptions.filter(s=>s.toLowerCase().includes(q.toLowerCase())):allStreetOptions;
@@ -982,7 +1066,7 @@ function filterStreetOptions(q){
 function toggleAllStreets(){
   const allCb=document.getElementById('ms-street-all');
   document.querySelectorAll('#ms-street-options input[type=checkbox]').forEach(c=>c.checked=allCb.checked);
-  updateGenericLabel('ms-street','ms-street-all','ms-street-label','street');
+  renderComboTags('ms-street','street-combo-tags','street');
 }
 function getSelectedStreets(){return Array.from(document.querySelectorAll('#ms-street-options input[type=checkbox]:checked')).map(c=>c.value);}
 
@@ -995,7 +1079,7 @@ function buildBlockOptions(blocks){
 function renderBlockOptions(blocks){
   const container=document.getElementById('ms-block-options');
   if(!blocks.length){container.innerHTML='<div style="padding:10px 14px;font-size:12px;color:var(--muted);">No blocks found</div>';return;}
-  container.innerHTML=blocks.map(b=>`<label class="ms-item"><input type="checkbox" value="${b}" onchange="updateGenericLabel('ms-block','ms-block-all','ms-block-label','block')"/> ${b}</label>`).join('');
+  container.innerHTML=blocks.map(b=>`<label class="ms-item"><input type="checkbox" value="${b}" onchange="streetBlockTagChange()"/> ${b}</label>`).join('');
 }
 function filterBlockOptions(q){
   const filtered=q?allBlockOptions.filter(b=>b.toLowerCase().startsWith(q.toLowerCase())):allBlockOptions;
@@ -1004,21 +1088,27 @@ function filterBlockOptions(q){
 function toggleAllBlocks(){
   const allCb=document.getElementById('ms-block-all');
   document.querySelectorAll('#ms-block-options input[type=checkbox]').forEach(c=>c.checked=allCb.checked);
-  updateGenericLabel('ms-block','ms-block-all','ms-block-label','block');
+  renderComboTags('ms-block','block-combo-tags','block');
 }
 function getSelectedBlocks(){return Array.from(document.querySelectorAll('#ms-block-options input[type=checkbox]:checked')).map(c=>c.value);}
+function streetBlockTagChange(){
+  renderComboTags('ms-street','street-combo-tags','street');
+  renderComboTags('ms-block','block-combo-tags','block');
+}
 
 function onTownChange(){
   const towns=getSelectedTowns();
   const info=document.getElementById('street-info');
-  // Reset street + block dropdowns
+  // Reset street + block dropdowns and combo inputs
   allStreetOptions=[];allBlockOptions=[];
   document.getElementById('ms-street-options').innerHTML='<div style="padding:10px 14px;font-size:12px;color:var(--muted);">Select a town to load streets</div>';
   document.getElementById('ms-block-options').innerHTML='<div style="padding:10px 14px;font-size:12px;color:var(--muted);">Select a town to load blocks</div>';
-  document.getElementById('ms-street-label').textContent='All streets';
-  document.getElementById('ms-block-label').textContent='All blocks';
   document.getElementById('ms-street-all').checked=false;
   document.getElementById('ms-block-all').checked=false;
+  document.getElementById('street-combo-text').value='';
+  document.getElementById('block-combo-text').value='';
+  document.getElementById('street-combo-tags').innerHTML='';
+  document.getElementById('block-combo-tags').innerHTML='';
   if(!towns.length){info.style.display='none';return;}
   // Aggregate streets + blocks across all selected towns
   let streets=[],blocks=new Set();
@@ -1061,7 +1151,9 @@ function setDateMode(mode,el){dateMode=mode;['quick','month','quarter','year'].f
 function setTopDateMode(mode,el){topDateMode=mode;['quick','month','quarter','year'].forEach(m=>{document.getElementById('top-date-'+m).style.display=m===mode?'block':'none';});el.closest('.date-mode-row').querySelectorAll('.date-mode-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');}
 function setView(v,el){currentView=v;document.querySelectorAll('.view-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');}
 function toggleMS(id){const dd=document.getElementById(id);const wasOpen=dd.classList.contains('open');document.querySelectorAll('.multi-select-dropdown').forEach(d=>d.classList.remove('open'));if(!wasOpen)dd.classList.add('open');}
-document.addEventListener('click',e=>{if(!e.target.closest('.multi-select-wrap'))document.querySelectorAll('.multi-select-dropdown').forEach(d=>d.classList.remove('open'));});
+document.addEventListener('click',e=>{if(!e.target.closest('.multi-select-wrap')&&!e.target.closest('.combo-wrap')){document.querySelectorAll('.multi-select-dropdown').forEach(d=>d.classList.remove('open'));document.querySelectorAll('.combo-chevron').forEach(c=>c.classList.remove('open'));}});
+// Enter key on any combo text fires search
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.classList.contains('combo-text'))doSearch();});
 function toggleAll(ddId,allId,labelId,type){const allCb=document.getElementById(allId);document.getElementById(ddId).querySelectorAll('input[type=checkbox]').forEach(c=>{if(c.id!==allId)c.checked=allCb.checked;});updateMSLabel(ddId,labelId,type);}
 function updateMSLabel(ddId,labelId,type){const checked=Array.from(document.getElementById(ddId).querySelectorAll('input[type=checkbox]')).filter(c=>!c.id.includes('-all')&&c.checked).map(c=>c.value);document.getElementById(labelId).textContent=!checked.length?`All ${type}s`:checked.length===1?checked[0]:`${checked.length} selected`;}
 document.querySelectorAll('.multi-select-dropdown input[type=checkbox]').forEach(cb=>{cb.addEventListener('change',()=>{const dd=cb.closest('.multi-select-dropdown');const type=dd.id.replace(/^(top-)?ms-/,'');const labelId=dd.id.replace('ms-','')+'-label';updateMSLabel(dd.id,labelId,type);});});
@@ -1119,23 +1211,25 @@ function resetSearch(){
   document.querySelectorAll('#ms-town input[type=checkbox]').forEach(c=>c.checked=false);
   updateTownLabel();clearAllMapSelections();updateMapSelectionDisplay();
   mapVisible=false;document.getElementById('map-panel').style.display='none';document.getElementById('map-icon').textContent='▸';
+  // Clear combo inputs and tags
+  ['town','flat','storey','street','block'].forEach(f=>{
+    const ti=document.getElementById(f+'-combo-text');if(ti)ti.value='';
+    const tg=document.getElementById(f+'-combo-tags');if(tg)tg.innerHTML='';
+    const cv=document.getElementById(f+'-combo-chevron');if(cv)cv.classList.remove('open');
+  });
   // Clear flat type
   document.querySelectorAll('#ms-flat input[type=checkbox]').forEach(c=>c.checked=false);
-  document.getElementById('ms-flat-label').textContent='All types';
   // Clear storey
   document.querySelectorAll('#ms-storey input[type=checkbox]').forEach(c=>c.checked=false);
-  document.getElementById('ms-storey-label').textContent='Any floor';
   // Clear street + block dropdowns
   allStreetOptions=[];allBlockOptions=[];
   document.getElementById('ms-street-options').innerHTML='<div style="padding:10px 14px;font-size:12px;color:var(--muted);">Select a town to load streets</div>';
   document.getElementById('ms-block-options').innerHTML='<div style="padding:10px 14px;font-size:12px;color:var(--muted);">Select a town to load blocks</div>';
-  document.getElementById('ms-street-label').textContent='All streets';
-  document.getElementById('ms-block-label').textContent='All blocks';
   document.getElementById('ms-street-all').checked=false;
   document.getElementById('ms-block-all').checked=false;
-  if(document.getElementById('street-search-input'))document.getElementById('street-search-input').value='';
-  if(document.getElementById('block-search-input'))document.getElementById('block-search-input').value='';
   document.getElementById('street-info').style.display='none';
+  // Close all dropdowns
+  document.querySelectorAll('.multi-select-dropdown').forEach(d=>d.classList.remove('open'));
   // Date mode back to quick / 6 months
   setDateMode('quick',document.querySelector('.date-mode-btn'));
   document.querySelectorAll('.period-btn').forEach(b=>b.classList.remove('active'));
