@@ -389,7 +389,7 @@ footer a{color:var(--accent);text-decoration:none;}
         </div>
       </div>
       <div class="form-group">
-        <label>Storey <span class="opt">(type or multi-select)</span></label>
+        <label>Storey <span class="opt" id="storey-label-hint">(type or multi-select)</span></label>
         <div class="combo-wrap">
           <div class="combo-input-row">
             <input type="text" class="combo-text" id="storey-combo-text" placeholder="e.g. 10 TO 12, high floor…" oninput="comboFilter('ms-storey',this.value,'storey')" onfocus="openCombo('ms-storey','storey-combo-chevron')" autocomplete="off"/>
@@ -1036,6 +1036,8 @@ function removeComboTag(ddId,val,tagsId,field){
   } else {cb.checked=false;}
   renderComboTags(ddId,tagsId,field);
   if(field==='town')onTownCheckChange();
+  if(field==='street')onStreetChange();
+  if(field==='block')onBlockChange();
 }
 
 function comboCheckChange(ddId,allId,labelId,noun,tagsId,field){
@@ -1057,7 +1059,7 @@ function buildStreetOptions(streets){
 function renderStreetOptions(streets){
   const container=document.getElementById('ms-street-options');
   if(!streets.length){container.innerHTML='<div style="padding:10px 14px;font-size:12px;color:var(--muted);">No streets found</div>';return;}
-  container.innerHTML=streets.map(s=>`<label class="ms-item"><input type="checkbox" value="${s}" onchange="streetBlockTagChange()"/> ${s}</label>`).join('');
+  container.innerHTML=streets.map(s=>`<label class="ms-item"><input type="checkbox" value="${s}" onchange="renderComboTags('ms-street','street-combo-tags','street');onStreetChange();"/> ${s}</label>`).join('');
 }
 function filterStreetOptions(q){
   const filtered=q?allStreetOptions.filter(s=>s.toLowerCase().includes(q.toLowerCase())):allStreetOptions;
@@ -1067,6 +1069,7 @@ function toggleAllStreets(){
   const allCb=document.getElementById('ms-street-all');
   document.querySelectorAll('#ms-street-options input[type=checkbox]').forEach(c=>c.checked=allCb.checked);
   renderComboTags('ms-street','street-combo-tags','street');
+  onStreetChange();
 }
 function getSelectedStreets(){return Array.from(document.querySelectorAll('#ms-street-options input[type=checkbox]:checked')).map(c=>c.value);}
 
@@ -1079,7 +1082,7 @@ function buildBlockOptions(blocks){
 function renderBlockOptions(blocks){
   const container=document.getElementById('ms-block-options');
   if(!blocks.length){container.innerHTML='<div style="padding:10px 14px;font-size:12px;color:var(--muted);">No blocks found</div>';return;}
-  container.innerHTML=blocks.map(b=>`<label class="ms-item"><input type="checkbox" value="${b}" onchange="streetBlockTagChange()"/> ${b}</label>`).join('');
+  container.innerHTML=blocks.map(b=>`<label class="ms-item"><input type="checkbox" value="${b}" onchange="renderComboTags('ms-block','block-combo-tags','block');onBlockChange();"/> ${b}</label>`).join('');
 }
 function filterBlockOptions(q){
   const filtered=q?allBlockOptions.filter(b=>b.toLowerCase().startsWith(q.toLowerCase())):allBlockOptions;
@@ -1089,39 +1092,261 @@ function toggleAllBlocks(){
   const allCb=document.getElementById('ms-block-all');
   document.querySelectorAll('#ms-block-options input[type=checkbox]').forEach(c=>c.checked=allCb.checked);
   renderComboTags('ms-block','block-combo-tags','block');
+  onBlockChange();
 }
 function getSelectedBlocks(){return Array.from(document.querySelectorAll('#ms-block-options input[type=checkbox]:checked')).map(c=>c.value);}
+// ── Storey multi-select (dynamic) ──────────────────────────────
+let allStoreyOptions=[];
+const ALL_STOREY_RANGES=['01 TO 03','04 TO 06','07 TO 09','10 TO 12','13 TO 15','16 TO 18','19 TO 21','22 TO 24','25 TO 27','28 TO 30','31 TO 33','34 TO 36','37 TO 39','40 TO 42','43 TO 45','46 TO 48','49 TO 51'];
+function getStaticStoreyItems(){return document.querySelectorAll('#ms-storey .ms-item:not(.ms-all)');}
+function filterStoreyOptions(allowedSet){
+  // allowedSet = Set of storey_range strings, or null/empty = show all
+  getStaticStoreyItems().forEach(item=>{
+    const val=item.querySelector('input[type=checkbox]').value;
+    item.style.display=(!allowedSet||allowedSet.size===0||allowedSet.has(val))?'':'none';
+  });
+}
+function resetStoreyFilter(){
+  filterStoreyOptions(null);
+  const hint=document.getElementById('storey-label-hint');
+  if(hint){hint.textContent='(type or multi-select)';hint.style.color='';}
+}
+
 function streetBlockTagChange(){
   renderComboTags('ms-street','street-combo-tags','street');
   renderComboTags('ms-block','block-combo-tags','block');
 }
 
+// Called when street selection changes — filter blocks to those on selected streets, auto-populate towns
+function onStreetChange(){
+  if(!DB.loaded)return;
+  const streets=getSelectedStreets();
+  const towns=getSelectedTowns();
+
+  // If streets selected: auto-fill towns that contain those streets (reverse lookup)
+  if(streets.length){
+    const townsForStreets=new Set();
+    DB.resale.forEach(r=>{if(streets.includes(r.street_name)&&r.town)townsForStreets.add(r.town);});
+    // Select those towns in the dropdown (if not already selected)
+    let changed=false;
+    townsForStreets.forEach(town=>{
+      const cb=document.querySelector(`#ms-town input[value="${CSS.escape(town)}"]`);
+      if(cb&&!cb.checked){cb.checked=true;changed=true;}
+    });
+    if(changed){updateTownLabel();syncMapFromDropdown();}
+
+    // Filter blocks to those on selected streets
+    const blocksForStreets=new Set();
+    DB.resale.forEach(r=>{if(streets.includes(r.street_name)&&r.block)blocksForStreets.add(r.block);});
+    const blockArr=[...blocksForStreets].sort((a,b)=>isNaN(a)||isNaN(b)?a.localeCompare(b):Number(a)-Number(b));
+    // Preserve existing block selections that are still valid
+    const currentBlocks=getSelectedBlocks();
+    buildBlockOptions(blockArr);
+    // Re-check previously selected blocks that still exist
+    currentBlocks.forEach(b=>{
+      const cb=document.querySelector(`#ms-block-options input[value="${CSS.escape(b)}"]`);
+      if(cb)cb.checked=true;
+    });
+    renderComboTags('ms-block','block-combo-tags','block');
+
+    // Also filter storeys from current block selection (if any blocks still selected)
+    _refreshStoreyFromBlocks();
+  } else {
+    // No streets selected — revert blocks to full town list (or all if no town either)
+    _refreshBlocksFromContext();
+    _refreshStoreyFromBlocks();
+  }
+
+  _refreshStreetInfo();
+}
+
+// Called when block selection changes — filter storeys to those in selected blocks, auto-populate towns/streets
+function onBlockChange(){
+  if(!DB.loaded)return;
+  const blocks=getSelectedBlocks();
+
+  if(blocks.length){
+    // Auto-fill towns + streets for those blocks (reverse lookup)
+    const townsForBlocks=new Set();
+    const streetsForBlocks=new Set();
+    DB.resale.forEach(r=>{
+      if(blocks.includes(r.block)){
+        if(r.town)townsForBlocks.add(r.town);
+        if(r.street_name)streetsForBlocks.add(r.street_name);
+      }
+    });
+
+    // Auto-populate towns
+    let townChanged=false;
+    townsForBlocks.forEach(town=>{
+      const cb=document.querySelector(`#ms-town input[value="${CSS.escape(town)}"]`);
+      if(cb&&!cb.checked){cb.checked=true;townChanged=true;}
+    });
+    if(townChanged){updateTownLabel();syncMapFromDropdown();}
+
+    // Auto-populate streets (if streets panel is empty or doesn't contain the streets for these blocks)
+    const currentStreets=getSelectedStreets();
+    if(!currentStreets.length){
+      // Load all streets for the towns, then select the ones matching the blocks
+      const towns=getSelectedTowns();
+      let allTownStreets=[];
+      towns.forEach(town=>{(DB.townStreets[town]||[]).forEach(s=>allTownStreets.push(s));});
+      allTownStreets=[...new Set(allTownStreets)].sort();
+      if(allTownStreets.length)buildStreetOptions(allTownStreets);
+      else{
+        const streetArr=[...streetsForBlocks].sort();
+        buildStreetOptions(streetArr);
+      }
+      // Select the streets that belong to the selected blocks
+      streetsForBlocks.forEach(s=>{
+        const cb=document.querySelector(`#ms-street-options input[value="${CSS.escape(s)}"]`);
+        if(cb)cb.checked=true;
+      });
+      renderComboTags('ms-street','street-combo-tags','street');
+    }
+
+    // Filter storeys to those that exist in selected blocks
+    _refreshStoreyFromBlocks();
+  } else {
+    // No blocks — restore storey to show all
+    resetStoreyFilter();
+    // Also uncheck any auto-selected streets if streets came purely from blocks
+    // (only if streets were auto-populated by block selection — don't touch manual picks)
+  }
+  _refreshStreetInfo();
+}
+
+// Rebuild storey filter based on currently selected blocks
+function _refreshStoreyFromBlocks(){
+  const blocks=getSelectedBlocks();
+  if(!blocks.length){resetStoreyFilter();return;}
+  const storeysForBlocks=new Set();
+  DB.resale.forEach(r=>{if(blocks.includes(r.block)&&r.storey_range)storeysForBlocks.add(r.storey_range);});
+  filterStoreyOptions(storeysForBlocks);
+  // Uncheck storeys that are now hidden
+  getStaticStoreyItems().forEach(item=>{
+    const cb=item.querySelector('input[type=checkbox]');
+    const val=cb.value;
+    if(storeysForBlocks.size&&!storeysForBlocks.has(val))cb.checked=false;
+  });
+  renderComboTags('ms-storey','storey-combo-tags','storey');
+  // Update the storey label to indicate it's been filtered by the selected block(s)
+  const hint=document.getElementById('storey-label-hint');
+  if(hint){
+    if(storeysForBlocks.size){
+      hint.textContent=`(filtered to ${storeysForBlocks.size} floor${storeysForBlocks.size>1?'s':''} in selected block${blocks.length>1?'s':''})`;
+      hint.style.color='var(--accent)';
+    } else {
+      hint.textContent='(type or multi-select)';
+      hint.style.color='';
+    }
+  }
+}
+
+// Rebuild block list based on current town + street context
+function _refreshBlocksFromContext(){
+  const towns=getSelectedTowns();
+  const streets=getSelectedStreets();
+  if(!towns.length&&!streets.length){
+    document.getElementById('ms-block-options').innerHTML='<div style="padding:10px 14px;font-size:12px;color:var(--muted);">Select a town or street to load blocks</div>';
+    allBlockOptions=[];
+    return;
+  }
+  const blocks=new Set();
+  DB.resale.forEach(r=>{
+    const townMatch=!towns.length||towns.includes(r.town);
+    const streetMatch=!streets.length||streets.includes(r.street_name);
+    if(townMatch&&streetMatch&&r.block)blocks.add(r.block);
+  });
+  const blockArr=[...blocks].sort((a,b)=>isNaN(a)||isNaN(b)?a.localeCompare(b):Number(a)-Number(b));
+  const currentBlocks=getSelectedBlocks();
+  buildBlockOptions(blockArr);
+  currentBlocks.forEach(b=>{
+    const cb=document.querySelector(`#ms-block-options input[value="${CSS.escape(b)}"]`);
+    if(cb)cb.checked=true;
+  });
+  renderComboTags('ms-block','block-combo-tags','block');
+}
+
+function _refreshStreetInfo(){
+  const info=document.getElementById('street-info');
+  const streets=allStreetOptions.length;
+  const blocks=document.querySelectorAll('#ms-block-options input[type=checkbox]').length;
+  if(streets||blocks){
+    const selStr=getSelectedStreets().length;
+    const selBlk=getSelectedBlocks().length;
+    const hint=selStr?` · ${selStr} street${selStr>1?'s':''} selected`:'';
+    const hint2=selBlk?` · ${selBlk} block${selBlk>1?'s':''} selected`:'';
+    info.textContent=`${streets} streets · ${blocks} blocks${hint}${hint2}`;
+    info.style.display='block';
+  } else {info.style.display='none';}
+}
+
 function onTownChange(){
   const towns=getSelectedTowns();
   const info=document.getElementById('street-info');
-  // Reset street + block dropdowns and combo inputs
-  allStreetOptions=[];allBlockOptions=[];
-  document.getElementById('ms-street-options').innerHTML='<div style="padding:10px 14px;font-size:12px;color:var(--muted);">Select a town to load streets</div>';
-  document.getElementById('ms-block-options').innerHTML='<div style="padding:10px 14px;font-size:12px;color:var(--muted);">Select a town to load blocks</div>';
-  document.getElementById('ms-street-all').checked=false;
-  document.getElementById('ms-block-all').checked=false;
-  document.getElementById('street-combo-text').value='';
-  document.getElementById('block-combo-text').value='';
-  document.getElementById('street-combo-tags').innerHTML='';
-  document.getElementById('block-combo-tags').innerHTML='';
-  if(!towns.length){info.style.display='none';return;}
+
+  if(!towns.length){
+    // All towns deselected — full reset of dependent fields
+    allStreetOptions=[];allBlockOptions=[];
+    document.getElementById('ms-street-all').checked=false;
+    document.getElementById('ms-block-all').checked=false;
+    document.getElementById('street-combo-text').value='';
+    document.getElementById('block-combo-text').value='';
+    document.getElementById('street-combo-tags').innerHTML='';
+    document.getElementById('block-combo-tags').innerHTML='';
+    document.getElementById('ms-street-options').innerHTML='<div style="padding:10px 14px;font-size:12px;color:var(--muted);">Select a town to load streets</div>';
+    document.getElementById('ms-block-options').innerHTML='<div style="padding:10px 14px;font-size:12px;color:var(--muted);">Select a town to load blocks</div>';
+    resetStoreyFilter();
+    info.style.display='none';
+    return;
+  }
+
+  // Snapshot current selections BEFORE rebuilding lists
+  const prevStreets=getSelectedStreets();
+  const prevBlocks=getSelectedBlocks();
+
   // Aggregate streets + blocks across all selected towns
-  let streets=[],blocks=new Set();
+  let streets=[];
+  const blocks=new Set();
   towns.forEach(town=>{
     (DB.townStreets[town]||[]).forEach(s=>streets.push(s));
     DB.resale.filter(r=>r.town===town).forEach(r=>{if(r.block)blocks.add(r.block);});
   });
   streets=[...new Set(streets)].sort();
   const blockArr=[...blocks].sort((a,b)=>isNaN(a)||isNaN(b)?a.localeCompare(b):Number(a)-Number(b));
+
   buildStreetOptions(streets);
   buildBlockOptions(blockArr);
-  if(streets.length){info.textContent=`${streets.length} streets · ${blockArr.length} blocks loaded`;info.style.display='block';}
-  else{info.textContent=towns.length>1?`${blockArr.length} blocks loaded across ${towns.length} towns`:'No street data — blocks loaded from transactions';info.style.display='block';}
+
+  // Re-check previously selected streets/blocks that still exist in the new town scope
+  prevStreets.forEach(s=>{
+    const cb=document.querySelector(`#ms-street-options input[value="${CSS.escape(s)}"]`);
+    if(cb)cb.checked=true;
+  });
+  prevBlocks.forEach(b=>{
+    const cb=document.querySelector(`#ms-block-options input[value="${CSS.escape(b)}"]`);
+    if(cb)cb.checked=true;
+  });
+  renderComboTags('ms-street','street-combo-tags','street');
+  renderComboTags('ms-block','block-combo-tags','block');
+
+  // Cascade: if blocks were preserved, re-filter storeys; if streets only, narrow blocks; else reset storey
+  const reselectedBlocks=getSelectedBlocks();
+  if(reselectedBlocks.length){
+    _refreshStoreyFromBlocks();
+  } else {
+    const reselectedStreets=getSelectedStreets();
+    if(reselectedStreets.length){
+      const blocksForStreets=new Set();
+      DB.resale.forEach(r=>{if(reselectedStreets.includes(r.street_name)&&r.block)blocksForStreets.add(r.block);});
+      const filteredBlockArr=[...blocksForStreets].sort((a,b)=>isNaN(a)||isNaN(b)?a.localeCompare(b):Number(a)-Number(b));
+      buildBlockOptions(filteredBlockArr);
+      renderComboTags('ms-block','block-combo-tags','block');
+    }
+    resetStoreyFilter();
+  }
+  _refreshStreetInfo();
 }
 
 // ── Map panel ───────────────────────────────────────────────────
@@ -1221,6 +1446,7 @@ function resetSearch(){
   document.querySelectorAll('#ms-flat input[type=checkbox]').forEach(c=>c.checked=false);
   // Clear storey
   document.querySelectorAll('#ms-storey input[type=checkbox]').forEach(c=>c.checked=false);
+  resetStoreyFilter();
   // Clear street + block dropdowns
   allStreetOptions=[];allBlockOptions=[];
   document.getElementById('ms-street-options').innerHTML='<div style="padding:10px 14px;font-size:12px;color:var(--muted);">Select a town to load streets</div>';
